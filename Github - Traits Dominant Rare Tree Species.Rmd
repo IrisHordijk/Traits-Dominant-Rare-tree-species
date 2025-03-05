@@ -1,7 +1,7 @@
 ---
-title: "Github - Traits Dominant Rare Tree Species"
-author: "Anonymous"
-date: "2024-05-17"
+title: "Code - Traits Dominant Rare Tree Species"
+author: "Iris Hordijk"
+date: "2025-03-01"
 output: html_document
 ---
 
@@ -155,7 +155,7 @@ setwd("~/Documents/PhD projects/Traits Dominant Species")
 fwrite(GFBI_SpeciesCheck, file="GFBI_SpeciesCheck_7-2021.csv")
 
 ```
-###Identify Dominant and Rare species on plot level based on 6 species threshold
+###Identify Dominant and Rare species on plot level
 ```{r Identify Dominant and Rare species on plot level}
 setwd("~/Documents/PhD projects/2nd Chapter - Trait diversity")
 GFBI_SpeciesCheck <- fread("~/Documents/PhD projects/2nd Chapter - Trait diversity/GFBI_SpeciesCheck_7-2021.csv") #plots: 1184025
@@ -325,12 +325,15 @@ barplot(pca_Traits$rotation[,1], main="PC 1 Loadings Plot", las=2) #PCA statisti
 barplot(pca_Traits$rotation[,2], main="PC 2 Loadings Plot", las=2)
 
 pca.df_Traits <- data.frame(pca1 = pca_Traits$x[,1], pca2 = pca_Traits$x[,2], DominanceCategory = Plot_TraitsDomRare$DominanceCategory, Biome=Plot_TraitsDomRare$Biome)
-pca.df_Traits2 <- data.frame(pca1 = pca_Traits$rotation[,1], pca2 = pca_Traits$rotation[,2],  labels = row.names(pca_Traits$rotation)) #, sig = pca_Traits$sig, #col=pca_Traits$col,
+pca.df_Traits2 <- data.frame(pca1 = pca_Traits$rotation[,1], pca2 = pca_Traits$rotation[,2],  labels = row.names(pca_Traits$rotation)) 
 pca.df_Traits2$col <- c("#050505", "#050505", "#050505", "#050505", "#050505", "#050505", "#050505", "#050505", "#050505", "#050505", "#58038c", "#9e7306", "#1c6915")
 
-#stat_ellipse(aes(group=factor(pca.df_Traits$DominanceCategory), color=factor(pca.df_Traits$DominanceCategory)), level = 0.68) + #, "deepskyblue", "blue1" #,"Dominant", "Rare"
+#Load data to reproduce figure 1
+pca.df_Traits <- fread("~/Documents/PhD projects/2nd Chapter - Trait diversity/pca.df_Traits.csv")
+pca.df_Traits2 <-fread("~/Documents/PhD projects/2nd Chapter - Trait diversity/pca.df_Traits2.csv") 
+
 Graph_pca_Traits <- ggplot(data=pca.df_Traits, aes(x=pca1, y=pca2)) + geom_point(aes(color = factor(pca.df_Traits$Biome), shape=factor(pca.df_Traits$DominanceCategory)), size = 4, alpha = 0.3) +  scale_color_manual(values = c("#ffdd03", "#8fd613", "#3f5220", "#0281a8", "#00549e", "#270169"), labels = c("Tropical moist", "Tropical dry", "Tropical conifer", "Temperate", "Temperate Conifer", "Boreal")) + 
-  labs(x = "PCA 1 (41%)", y= "PCA 2 (25%)") + ggtitle("Traits dominant and rare tree species") + theme_bw() + labs(colour="Forest") + 
+  labs(x = "PC1 (41%)", y= "PC2 (25%)") + ggtitle("Traits dominant and rare tree species") + theme_bw() + labs(colour="Forest") + 
          theme(axis.line = element_line(colour = "black"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -438,6 +441,9 @@ TraitsDiffMean <- left_join(TraitsDiffMean, Results_Wilcoxon_nr)
 
 ##Boxplots standard error 
 TraitsDiffMean <- TraitsDiffMean[which(TraitsDiffMean$Biome!=3),]
+
+#Load data to reproduce figure 3
+TraitsDiffMean <- fread("~/Documents/PhD projects/2nd Chapter - Trait diversity/TraitsDiffMean.csv")
 
 #####Add significance level
 BoxplotLeafN <- ggplot(TraitsDiffMean, aes(x=Biome, y=MeanLeafN, colour=factor(Biome), shape=factor(Pvalue_LeafN))) + geom_point(size=4, position = position_dodge(width=0.75)) +
@@ -681,10 +687,12 @@ DifCWM_Envars$Temperature <- DifCWM_Envars$Temperature/10
 DifCWM_Envars$Aridity <- DifCWM_Envars$Aridity*0.0001
 DifCWM_Envars <- DifCWM_Envars[which(DifCWM_Envars$Aridity <= 4),] #69 plots removed
 
-#############MAIN TEXT
+#Load data to reproduce figure 4
+DifCWM_Envars <- fread("~/Documents/PhD projects/2nd Chapter - Trait diversity/DifCWM_Envars.csv") 
+
+#############Water availability graphs MAIN TEXT
 Height_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, Height)) + #linear relationship (quadratic relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.03***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) + xlab(" ") + ylab("Δ Height") + #labs(title="Height") +
   geom_ribbon(aes(ymin = 0,ymax = predict(lm(Height  ~ Aridity), data=DifCWM_Envars)), alpha = 0.8,fill = "#9e7306")+
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
@@ -698,11 +706,10 @@ Height_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, Height)) + #linear relation
 
 RootDepth_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, RootDepth)) + #Quadratic relationship (linear relationship as good)
   geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(c(0, 4)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.01***", x = 3.5, y = 0.8, size = 6, colour = "black") + 
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(RootDepth ~ Aridity), data=DifCWM_Envars)), alpha = 0.8, fill = "#9e7306")+
   geom_segment(aes(x = 1.6, y = 0, xend = 1.6, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Root Depth")+ #labs(title="Root Depth") +
+  xlab(" ") + ylab("Δ Rooting Depth")+ #labs(title="Root Depth") +
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
         axis.title.x = element_text(size = 16, face = "bold"),
         axis.text.x = element_text(size = 14),
@@ -714,7 +721,6 @@ RootDepth_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, RootDepth)) + #Quadratic
 
 StemConduitDiameter_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, StemConduitDiameter)) + #Quadratic relationship
   geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.03***", x = 3.5, y = -0.8, size = 6, colour = "black") +
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(StemConduitDiameter ~ Aridity), data=DifCWM_Envars)), alpha = 0.8, fill = "#9e7306")+
   geom_segment(aes(x = 1.65, y = 0, xend = 1.65, yend = -Inf), size=0.5, linetype="dashed") +
@@ -729,8 +735,7 @@ StemConduitDiameter_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, StemConduitDia
   guides(size=FALSE)
 
 SLA_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, SLA)) + #Quadratic relationship (linear relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.05***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(SLA ~ Aridity), data=DifCWM_Envars)), alpha = 0.8, fill = "#9e7306")+
   geom_segment(aes(x = 1.55, y = 0, xend = 1.55, yend = -Inf), size=0.5, linetype="dashed") +
@@ -745,12 +750,11 @@ SLA_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, SLA)) + #Quadratic relationshi
   guides(size=FALSE)
 
 pca1_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, pca1)) + #Quadratic relationship with log(y) (linear relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.1***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(pca1 ~ Aridity), data=DifCWM_Envars)), alpha = 0.8, fill = "#9e7306")+
   geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab("Humidity Index") + ylab("Δ pca1")+ #labs(title="pca1") +
+  xlab("Water Availability Index") + ylab("Δ PC1")+ #labs(title="pca1") +
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
         axis.title.x = element_text(size = 16, face = "bold"),
         axis.text.x = element_text(size = 14),
@@ -760,138 +764,9 @@ pca1_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, pca1)) + #Quadratic relations
         legend.text = element_blank()) +
   guides(size=FALSE)
 
-#############SI
-CrownDiameter_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, CrownDiameter)) + #linear with log(y) (quadratic relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "<0.01", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
-  geom_hline(yintercept=0, color = "grey", size=1) + xlab(" ") + ylab("Δ Crown Diam.")+ #labs(title="Crown Diameter") +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(CrownDiameter ~ Aridity, data=DifCWM_Envars))), alpha = 0.8,fill = "#9e7306")+
-  geom_segment(aes(x = 1.6, y = 0, xend = 1.6, yend = -Inf), size=0.5, linetype="dashed") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-WoodDensity_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, WoodDensity)) + #Quadratic relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.08***", x = 3.5, y = -0.8, size = 6, colour = "black") + theme_classic()+ 
-  geom_hline(yintercept=0, color = "grey", size=1) + xlab(" ") + ylab("Δ Wood Density")+ #labs(title="Wood density") +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(WoodDensity ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-  
-BarkThickness_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, BarkThickness)) + #Quadratic relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.02***", x = 3.5, y =0.8, size = 6, colour = "black") + theme_classic() + 
-  geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(BarkThickness ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 2.8, y = 0, xend = 2.8, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Bark thickness")+ #labs(title="Bark thickness") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-LeafN_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, LeafN)) + #Quadratic relationship (linear relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.03***", x = 3.5, y = -0.8, size = 6, colour = "black") +
-  theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafN ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 1.65, y = 0, xend = 1.65, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Leaf N")+ #labs(title="Leaf N") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-LeafNP_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, LeafNP)) + #Quadratic relationship (linear relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.03***", x = 3.5, y = 0.8, size = 6, colour = "black") +theme_classic()+ 
-  geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafNP ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 1.65, y = 0, xend = 1.65, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab("Humidity Index") + ylab("Δ Leaf NP")+ #labs(title="Leaf NP") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-SeedMass_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, SeedMass)) + #Linear relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.02***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
-  geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(SeedMass ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Seed Mass")+ #labs(title="Seed Mass") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-Gymnosperm_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, PercInd_gymnosperm)) + #Linear relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.05***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
-  geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(PercInd_gymnosperm ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  #geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Gymnosperm %")+ #labs(title="Seed Mass") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size="none")
-
-pca2_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, pca2)) + #linear relationship or quadratic relationship with log(y)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.02***", x = 3.5, y = 0.8, size = 6, colour = "black") + theme_classic() + 
-  geom_hline(yintercept=0, color = "grey", size=1) +
-  geom_ribbon(aes(ymin = 0, ymax = predict(lm(pca2 ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
-  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab("Humidity Index") + ylab("Δ pca2")+ #labs(title="pca2") +
-  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16, face = "bold"),
-        axis.text.x = element_text(size = 14),
-        axis.title.y = element_text(size = 16, face = "bold"),
-        axis.text.y = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.text = element_blank()) +
-  guides(size=FALSE)
-
-###Temperature graphs
-#############MAIN TEXT
+###Temperature graphs MAIN TEXT
 Height_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, Height)) + #Quadratic relationship with log(y) (linear relationship as good)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.06***", x = 23, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) + #linetype="dashed", 
   xlab(" ") + ylab("Δ Height")+ 
   geom_ribbon(aes(ymin = 0,ymax = predict(lm(Height  ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8,fill = "#58038c")+
@@ -907,11 +782,10 @@ Height_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, Height)) + #Quadrat
 
 RootDepth_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, RootDepth)) + #Quadratic relationship
   geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.03***", x = 23, y = 0.8, size = 6, colour = "black") + 
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(RootDepth ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab(" ") + ylab("Δ Root Depth")+
+  xlab(" ") + ylab("Δ Rooting Depth")+
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
         axis.title.x = element_text(size = 16, face = "bold"),
         axis.text.x = element_text(size = 14),
@@ -923,7 +797,6 @@ RootDepth_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, RootDepth)) + #Q
 
 StemConduitDiameter_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, StemConduitDiameter)) + #Quadratic relationship
   geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.06***", x = 23, y = 0.8, size = 6, colour = "black") +
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(StemConduitDiameter ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -936,10 +809,9 @@ StemConduitDiameter_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, StemCo
         legend.title = element_blank(),
         legend.text = element_blank()) +
   guides(size=FALSE)
-  
+
 SLA_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, SLA)) + #Quadratic relationship with log(y)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.09***", x = 23, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(SLA ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 6, y = 0, xend = 6, yend = -Inf), size=0.5, linetype="dashed") +
@@ -954,12 +826,11 @@ SLA_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, SLA)) + #Quadratic rel
   guides(size=FALSE)
 
 pca1_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, pca1)) + #Quadratic relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.14***", x = 23, y = -0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(pca1 ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab("Temperature °C") + ylab("Δ pca1")+
+  xlab("Temperature °C") + ylab("Δ PC1")+
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
         axis.title.x = element_text(size = 16, face = "bold"),
         axis.text.x = element_text(size = 14),
@@ -969,10 +840,132 @@ pca1_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, pca1)) + #Quadratic r
         legend.text = element_blank()) +
   guides(size=FALSE)
 
-#############SI
+##############Final graphs MAIN text
+Graphs_Aridity <- grid.arrange(Height_Aridity, WoodDensity_Aridity, LeafN_Aridity, SeedMass_Aridity, RootDepth_Aridity,  pca1_Aridity, nrow=6)
+Graphs_Temp <- grid.arrange(Height_Temperature, WoodDensity_Temperature, LeafN_Temperature, SeedMass_Temperature, RootDepth_Temperature,  pca1_Temperature, nrow=6)
+Graph4 <- grid.arrange(Graphs_Temp, Graphs_Aridity, ncol=2, top=textGrob("Trait differences correlated with climate", gp=gpar(col="black", fontsize=21, fontface="bold")), padding = unit(3,"line"))
+
+#############SI Water availability
+CrownDiameter_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, CrownDiameter)) + #linear with log(y) (quadratic relationship as good)
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
+  geom_hline(yintercept=0, color = "grey", size=1) + xlab(" ") + ylab("Δ Crown Diam.")+ #labs(title="Crown Diameter") +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(CrownDiameter ~ Aridity, data=DifCWM_Envars))), alpha = 0.8,fill = "#9e7306")+
+  geom_segment(aes(x = 1.6, y = 0, xend = 1.6, yend = -Inf), size=0.5, linetype="dashed") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+WoodDensity_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, WoodDensity)) + #Quadratic relationship
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) + theme_classic()+ 
+  geom_hline(yintercept=0, color = "grey", size=1) + xlab(" ") + ylab("Δ Wood Density")+ #labs(title="Wood density") +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(WoodDensity ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+  
+BarkThickness_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, BarkThickness)) + #Quadratic relationship
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
+  geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(BarkThickness ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 2.8, y = 0, xend = 2.8, yend = -Inf), size=0.5, linetype="dashed") +
+  xlab(" ") + ylab("Δ Bark thickness")+ #labs(title="Bark thickness") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+LeafN_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, LeafN)) + #Quadratic relationship (linear relationship as good)
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) +
+  theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafN ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 1.65, y = 0, xend = 1.65, yend = -Inf), size=0.5, linetype="dashed") +
+  xlab(" ") + ylab("Δ Leaf N")+ #labs(title="Leaf N") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+LeafNP_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, LeafNP)) + #Quadratic relationship (linear relationship as good)
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) + theme_classic()+ 
+  geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafNP ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 1.65, y = 0, xend = 1.65, yend = -Inf), size=0.5, linetype="dashed") +
+  xlab("Humidity Index") + ylab("Δ Leaf NP")+ #labs(title="Leaf NP") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+SeedMass_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, SeedMass)) + #Linear relationship
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
+  geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(SeedMass ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
+  xlab(" ") + ylab("Δ Seed Mass")+ #labs(title="Seed Mass") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+Gymnosperm_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, PercInd_gymnosperm)) + #Linear relationship
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
+  geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(PercInd_gymnosperm ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  xlab(" ") + ylab("Δ Gymnosperm %")+ #labs(title="Seed Mass") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size="none")
+
+pca2_Aridity <- ggplot(DifCWM_Envars, aes(Aridity, pca2)) + #linear relationship or quadratic relationship with log(y)
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm") + xlim(0,4) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
+  geom_hline(yintercept=0, color = "grey", size=1) +
+  geom_ribbon(aes(ymin = 0, ymax = predict(lm(pca2 ~ Aridity, data=DifCWM_Envars))), alpha = 0.8, fill = "#9e7306")+
+  geom_segment(aes(x = 1.7, y = 0, xend = 1.7, yend = -Inf), size=0.5, linetype="dashed") +
+  xlab("Humidity Index") + ylab("Δ PC2")+ #labs(title="pca2") +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.text.x = element_text(size = 14),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        axis.text.y = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.text = element_blank()) +
+  guides(size=FALSE)
+
+#############SI Temperature
 CrownDiameter_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, CrownDiameter)) + #Quadratic term with log(y) (as good as with y)
   geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.06***", x = 23, y = 0.8, size = 6, colour = "black") +
   theme_classic() + geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(CrownDiameter ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -988,7 +981,6 @@ CrownDiameter_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, CrownDiamete
 
 WoodDensity_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, WoodDensity)) + #Quadratic term with log(y) (as good as with y)
   geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.05***", x = 23, y = 0.8, size = 6, colour = "black") +
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(WoodDensity ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 6.5, y = 0, xend = 6.5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1003,8 +995,7 @@ WoodDensity_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, WoodDensity)) 
   guides(size=FALSE)
   
 BarkThickness_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, BarkThickness)) + #Quadratic relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.03***", x = 23, y =0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(BarkThickness ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 23, y = 0, xend = 23, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1020,7 +1011,6 @@ BarkThickness_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, BarkThicknes
 
 LeafN_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, LeafN)) + #Quadratic relationship
   geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.07***", x = 23, y = 0.8, size = 6, colour = "black") +
   theme_classic()+ geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafN ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1035,8 +1025,7 @@ LeafN_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, LeafN)) + #Quadratic
   guides(size=FALSE)
 
 LeafNP_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, LeafNP)) + #Quadratic relationship
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "0.03***", x = 25, y = 0.8, size = 6, colour = "black") +theme_classic()+ 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(LeafNP ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 4, y = 0, xend = 4, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1051,8 +1040,7 @@ LeafNP_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, LeafNP)) + #Quadrat
   guides(size=FALSE)
 
 SeedMass_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, SeedMass)) + #Quadratic relationship with log(y) (as good as linear relationship)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.01***", x = 23, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(SeedMass ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1067,8 +1055,7 @@ SeedMass_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, SeedMass)) + #Qua
   guides(size=FALSE)
 
 Gymnosperm_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, PercInd_gymnosperm)) + #Quadratic relationship with log(y) (as good as linear relationship)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.04***", x = 23, y = -0.5, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(PercInd_gymnosperm ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   #geom_segment(aes(x = 5, y = 0, xend = 5, yend = -Inf), size=0.5, linetype="dashed") +
@@ -1083,12 +1070,11 @@ Gymnosperm_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, PercInd_gymnosp
   guides(size=FALSE)
 
 pca2_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, pca2)) + #Quadratic relationship with log(y)
-  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) +
-  annotate("text", label = "-0.09***", x = 23, y = 0.8, size = 6, colour = "black") + theme_classic() + 
+  geom_smooth(size= 2, colour="#0a0a0a", method="lm", formula=y ~ poly(x, 2, raw=TRUE)) + coord_cartesian(ylim=c(-1, 1)) + theme_classic() + 
   geom_hline(yintercept=0, color = "grey", size=1) +
   geom_ribbon(aes(ymin = 0, ymax = predict(lm(pca2 ~ poly(Temperature, 2, raw=TRUE), data=DifCWM_Envars))), alpha = 0.8, fill = "#58038c")+
   geom_segment(aes(x = 8, y = 0, xend = 8, yend = -Inf), size=0.5, linetype="dashed") +
-  xlab("Temperature °C") + ylab("Δ pca2")+
+  xlab("Temperature °C") + ylab("Δ PC2")+
   theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
         axis.title.x = element_text(size = 16, face = "bold"),
         axis.text.x = element_text(size = 14),
@@ -1098,13 +1084,7 @@ pca2_Temperature <- ggplot(DifCWM_Envars, aes(Temperature, pca2)) + #Quadratic r
         legend.text = element_blank()) +
   guides(size=FALSE)
 
-##############Final graphs
-###MAIN text
-Graphs_Aridity <- grid.arrange(Height_Aridity, WoodDensity_Aridity, LeafN_Aridity, SeedMass_Aridity, RootDepth_Aridity,  pca1_Aridity, nrow=6)
-Graphs_Temp <- grid.arrange(Height_Temperature, WoodDensity_Temperature, LeafN_Temperature, SeedMass_Temperature, RootDepth_Temperature,  pca1_Temperature, nrow=6)
-Graph4 <- grid.arrange(Graphs_Temp, Graphs_Aridity, ncol=2, top=textGrob("Trait differences correlated with climate", gp=gpar(col="black", fontsize=21, fontface="bold")), padding = unit(3,"line"))
-
-###SI
+###Final graphs SI
 SI_Aridity_A <- grid.arrange(CrownDiameter_Aridity, BarkThickness_Aridity, StemConduitDiameter_Aridity, SLA_Aridity, LeafNP_Aridity, nrow=5)
 SI_Temp_A <- grid.arrange(CrownDiameter_Temperature,  BarkThickness_Temperature, StemConduitDiameter_Temperature, SLA_Temperature, LeafNP_Temperature, nrow=5)
 FigS2A <- grid.arrange(SI_Temp_A, SI_Aridity_A, ncol=2, top=textGrob("Trait differences correlated with climate", gp=gpar(col="black", fontsize=21, fontface="bold")), padding = unit(3,"line"))
